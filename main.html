@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SALI-Fi Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Feather Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <style>
+        .nav-item.active {
+            border-left: 4px solid #10B981;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        .map-container {
+            height: 400px;
+        }
+        /* Custom tooltip styling */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1F2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Table styling */
+        .table-row:hover {
+            background-color: #F3F4F6;
+        }
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex h-screen">
+    <!-- Sidebar -->
+    <div class="bg-gray-800 text-white w-64 flex-shrink-0 hidden md:block">
+        <div class="p-4 flex items-center border-b border-gray-700">
+            <div class="bg-emerald-500 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold">SALI-Fi</h1>
+                <p class="text-xs text-gray-400">dMRV Carbon Credits</p>
+            </div>
+        </div>
+        <nav class="mt-4">
+            <div class="nav-item active px-4 py-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                </svg>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item px-4 py-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+                <span>Projects</span>
+            </div>
+            <div class="nav-item px-4 py-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 01-2.031.352 5.988 5.988 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0l2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 01-2.031.352 5.989 5.989 0 01-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971z" />
+                </svg>
+                <span>Carbon Credits</span>
+            </div>
+            <div class="nav-item px-4 py-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <span>Risk Alerts</span>
+            </div>
+            <div class="nav-item px-4 py-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                </svg>
+                <span>Community Portal</span>
+            </div>
+            <div class="nav-item px-4 py-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Settings</span>
+            </div>
+        </nav>
+        <div class="mt-auto p-4 border-t border-gray-700">
+            <div class="flex items-center">
+                <img src="/api/placeholder/40/40" alt="User" class="rounded-full w-10 h-10">
+                <div class="ml-3">
+                    <p class="font-semibold">Sarah Chen</p>
+                    <p class="text-xs text-gray-400">Project Manager</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto">
+        <!-- Top Navigation -->
+        <div class="bg-white shadow px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <button class="md:hidden mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+                <h2 class="text-lg font-semibold">Overview Dashboard</h2>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    </div>
+                    <input type="text" class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Search...">
+                </div>
+                <button class="bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    New Report
+                </button>
+                <div class="relative">
+                    <button class="relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                        </svg>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">3</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="p-6">
+            <!-- Project Selection & Date -->
+            <div class="flex flex-col md:flex-row justify-between mb-6">
+                <div class="flex flex-col mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <h3 class="text-xl font-bold">Bengal Blue Carbon Initiative</h3>
+                        <span class="ml-3 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
+                    </div>
+                    <p class="text-gray-500">VCS VM0033 Carbon Project • Last updated: April 13, 2025 08:32 AM</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                        <select id="projectSelect" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="blue-carbon">Bengal Blue Carbon Initiative</option>
+                            <option value="clean-bricks">Clean Bricks Production</option>
+                            <option value="agroforestry">Community-Based Agroforestry</option>
+                            <option value="salm">Sustainable Agriculture (SALM)</option>
+                            <option value="wastewater">Wastewater Treatment Plant</option>
+                            <option value="waste-management">Waste Management Scheme</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Methodology</label>
+                        <select id="Methodology" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="VCS-VM0033">VCS VM0033</option>
+                            <option value="VCS-VM0022">VCS VM0022</option>
+                            <option value="CDM-AR-AM0014">CDM AR-AM0014</option>
+                            <option value="VCS-VM0015">VCS VM0015</option>
+                            <option value="VCS-VM0007">VCS VM0007</option>
+                            <option value="VCS-VM0006">VCS VM0006</option>
+                            <option value="VCS-VM0017">VCS VM0017</option>
+                            <option value="Gold-Standard">Gold Standard</option>
+                            <option value="CDM-AMS-III.F">CDM AMS-III.F</option>
+                            <option value="CDM-AMS-II.G">CDM AMS-II.G</option>
+                            <option value="CDM-AMS-III.H">CDM AMS-III.H</option>
+                            <option value="Plan-Vivo-System">Plan Vivo System</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Period</label>
+                        <select id="timePeriod" class="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                            <option value="quarter">Last Quarter</option>
+                            <option value="ytd">Year to Date</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-start">
+                        <div class>
+                            <p class="text-emerald-500 text-sm">Carbon Credits Issued</p>
+                            <h4 class="text-2xl font-bold mt-1">185.7 tCO₂e</h4>
+                            <div class="flex items-center mt-2">
+                                <span class="text-green-500 flex items-center text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+                                    </svg>
+                                    +3.2%
+                                </span>
+                                <span class="text-gray-500 text-xs ml-2">vs. last month</span>
+                            </div>
+                        </div>
+                        <div class="tooltip">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                            </svg>
+                            <span class="tooltip-text">VCS VM0033 certified carbon credits issued in the last 24 hours via Fantom blockchain. ±5% accuracy.</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 h-12">
+                        <canvas id="carbonCreditsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm">Mangrove Health Index</p>
+                            <h4 class="text-2xl font-bold mt-1">92.3%</h4>
+                            <div class="flex items-center mt-2">
+                                <span class="text-green-500 flex items-center text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+                                    </svg>
+                                    +1.7%
+                                </span>
+                                <span class="text-gray-500 text-xs ml-2">vs. last month</span>
+                            </div>
+                        </div>
+                        <div class="tooltip">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                            </svg>
+                            <span class="tooltip-text">Composite index based on canopy cover, density, and species diversity from LiDAR and satellite imagery.</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 h-12">
+                        <canvas id="mangroveHealthChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm">Biodiversity Index</p>
+                            <h4 class="text-2xl font-bold mt-1">0.84</h4>
+                            <div class="flex items-center mt-2">
+                                <span class="text-green-500 flex items-center text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+                                    </svg>
+                                    +0.04
+                                </span>
+                                <span class="text-gray-500 text-xs ml-2">vs. last month</span>
+                            </div>
+                        </div>
+                        <div class="tooltip">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                            </svg>
+                            <span class="tooltip-text">Rao's Q diversity index from acoustic monitoring of wildlife in the project area.</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 h-12">
+                        <canvas id="biodiversityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm">Soil Carbon Level</p>
+                            <h4 class="text-2xl font-bold mt-1">56.3 tC/ha</h4>
+                            <div class="flex items-center mt-2">
+                                <span class="text-green-500 flex items-center text-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+                                    </svg>
+                                    +2.5%
+                                </span>
+                                <span class="text-gray-500 text-xs ml-2">vs. last month</span>
+                            </div>
+                        </div>
+                        <div class="tooltip">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                            </svg>
+                            <span class="tooltip-text">Soil carbon measured via IoT sensors and field samples, ±5% accuracy.</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 h-12">
+                        <canvas id="soilCarbonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Area Section -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h3 class="text-lg font-semibold mb-4">Project Area</h3>
+                <img src="hess.png" alt="Bengal Blue Carbon Project Area" class="map-container w-full rounded-lg object-cover">
+                <p class="text-gray-500 text-sm mt-2">Interactive map showing project boundaries and monitoring points (IoT sensors, field measurement sites).</p>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h3 class="text-lg font-semibold mb-4">Recent Data Points</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-gray-500">
+                                <th class="pb-3">Timestamp</th>
+                                <th class="pb-3">Source</th>
+                                <th class="pb-3">Metric</th>
+                                <th class="pb-3">Value</th>
+                                <th class="pb-3">Confidence</th>
+                                <th class="pb-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-row border-t">
+                                <td class="py-3">2025-04-13 07:30 AM</td>
+                                <td>IoT Sensor</td>
+                                <td>Soil Carbon</td>
+                                <td>56.3 tC/ha</td>
+                                <td>95%</td>
+                                <td>
+                                    <button class="text-emerald-500 hover:underline">View Details</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row border-t">
+                                <td class="py-3">2025-04-13 07:00 AM</td>
+                                <td>Satellite (LiDAR)</td>
+                                <td>Mangrove Biomass</td>
+                                <td>120.5 t/ha</td>
+                                <td>95%</td>
+                                <td>
+                                    <button class="text-emerald-500 hover:underline">View Details</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row border-t">
+                                <td class="py-3">2025-04-13 06:45 AM</td>
+                                <td>Acoustic</td>
+                                <td>Biodiversity (Rao’s Q)</td>
+                                <td>0.84</td>
+                                <td>90%</td>
+                                <td>
+                                    <button class="text-emerald-500 hover:underline">View Details</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row border-t">
+                                <td class="py-3">2025-04-12 09:15 PM</td>
+                                <td>Manual Upload</td>
+                                <td>Mangrove Photo</td>
+                                <td>Verified</td>
+                                <td>100%</td>
+                                <td>
+                                    <button class="text-emerald-500 hover:underline">View Image</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Risk Alerts -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <h3 class="text-lg font-semibold mb-4">Recent Risk Alerts</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                        <div>
+                            <p class="font-medium">Potential Encroachment Detected</p>
+                            <p class="text-gray-500 text-sm">Satellite imagery shows activity near northern boundary. 90% confidence.</p>
+                            <p class="text-gray-400 text-xs">2025-04-13 06:00 AM</p>
+                        </div>
+                        <button class="bg-red-500 text-white px-3 py-1 rounded-lg" onclick="openModal('encroachment')">Investigate</button>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+                        <div>
+                            <p class="font-medium">Pest Activity Suspected</p>
+                            <p class="text-gray-500 text-sm">IoT sensors report abnormal mangrove stress. 85% confidence.</p>
+                            <p class="text-gray-400 text-xs">2025-04-12 03:45 PM</p>
+                        </div>
+                        <button class="bg-yellow-500 text-white px-3 py-1 rounded-lg" onclick="openModal('pest')">Investigate</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Engagement -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">Community Engagement</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-gray-500 text-sm">Jobs Created</p>
+                        <h4 class="text-2xl font-bold mt-1">45</h4>
+                        <p class="text-gray-500 text-sm mt-2">Local hires for monitoring, maintenance, and field measurements.</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Revenue Shared</p>
+                        <h4 class="text-2xl font-bold mt-1">30%</h4>
+                        <p class="text-gray-500 text-sm mt-2">Portion of credit sales distributed to community stakeholders.</p>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <h4 class="text-md font-semibold">Recent Community Updates</h4>
+                    <ul class="mt-2 space-y-2">
+                        <li class="text-gray-600">2025-04-10: Training workshop for IoT sensor maintenance held with 20 participants.</li>
+                        <li class="text-gray-600">2025-04-08: Community consultation portal updated with new project report.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Modal for Risk Investigation -->
+            <div id="riskModal" class="modal">
+                <div class="modal-content">
+                    <h3 id="modalTitle" class="text-lg font-semibold mb-4"></h3>
+                    <p id="modalDescription" class="text-gray-600 mb-4"></p>
+                    <div class="flex justify-end space-x-4">
+                        <button class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg" onclick="closeModal()">Close</button>
+                        <button class="bg-emerald-500 text-white px-4 py-2 rounded-lg">Take Action</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // Chart.js Initialization
+        const chartConfig = {
+            type: 'line',
+            options: {
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { display: false }
+                },
+                plugins: {
+                    legend: { display: false }
+                },
+                maintainAspectRatio: false
+            }
+        };
+
+        new Chart(document.getElementById('carbonCreditsChart'), {
+            ...chartConfig,
+            data: {
+                labels: ['6h', '12h', '18h', '24h'],
+                datasets: [{
+                    data: [180, 182, 184, 185.7],
+                    borderColor: '#10B981',
+                    fill: false
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('mangroveHealthChart'), {
+            ...chartConfig,
+            data: {
+                labels: ['6h', '12h', '18h', '24h'],
+                datasets: [{
+                    data: [90, 91, 91.8, 92.3],
+                    borderColor: '#10B981',
+                    fill: false
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('biodiversityChart'), {
+            ...chartConfig,
+            data: {
+                labels: ['6h', '12h', '18h', '24h'],
+                datasets: [{
+                    data: [0.80, 0.81, 0.83, 0.84],
+                    borderColor: '#10B981',
+                    fill: false
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('soilCarbonChart'), {
+            ...chartConfig,
+            data: {
+                labels: ['6h', '12h', '18h', '24h'],
+                datasets: [{
+                    data: [54, 55, 55.8, 56.3],
+                    borderColor: '#10B981',
+                    fill: false
+                }]
+            }
+        });
+
+        // Modal Functions
+        function openModal(type) {
+            const modal = document.getElementById('riskModal');
+            const title = document.getElementById('modalTitle');
+            const description = document.getElementById('modalDescription');
+
+            if (type === 'encroachment') {
+                title.textContent = 'Investigate Encroachment';
+                description.textContent = 'Satellite imagery indicates potential unauthorized activity near the northern boundary. Recommend deploying staff for ground verification.';
+            } else if (type === 'pest') {
+                title.textContent = 'Investigate Pest Activity';
+                description.textContent = 'IoT sensors report elevated stress in mangroves, possibly due to pest infestation. Suggest biological survey and targeted treatment.';
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('riskModal').style.display = 'none';
+        }
+
+        // Sidebar Toggle for Mobile
+        document.querySelector('.md\\:hidden').addEventListener('click', () => {
+            const sidebar = document.querySelector('.bg-gray-800');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // Dynamic Project Selection
+        document.getElementById('projectSelect').addEventListener('change', (e) => {
+            const project = e.target.value;
+            const header = document.querySelector('.flex.items-center h3');
+            const subtext = document.querySelector('.text-gray-500');
+            
+            const projectData = {
+                'blue-carbon': { name: 'Bengal Blue Carbon Initiative', cert: 'VCS VM0033' },
+                'clean-bricks': { name: 'Clean Bricks Production', cert: 'CDM AMS-II.G' },
+                'agroforestry': { name: 'Community-Based Agroforestry', cert: 'VCS VM0007' },
+                'salm': { name: 'Sustainable Agriculture (SALM)', cert: 'VCS VM0017' },
+                'wastewater': { name: 'Wastewater Treatment Plant', cert: 'CDM AMS-III.H' },
+                'waste-management': { name: 'Waste Management Scheme', cert: 'CDM AMS-III.F' }
+            };
+
+            header.textContent = projectData[project].name;
+            subtext.textContent = `${projectData[project].cert} Carbon Project • Last updated: April 13, 2025 08:32 AM`;
+        });
+    </script>
+</body>
+</html>
